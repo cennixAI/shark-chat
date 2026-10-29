@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>agent</title>
+    <link rel="icon" href="data:," />
+    <script>
+      // Pick the theme before first paint so dark mode doesn't flash white.
+      try {
+        var saved = localStorage.getItem("shark-chat.theme");
+      } catch (e) {}
+      document.documentElement.dataset.theme =
+        saved === "light" || saved === "dark" ? saved
+        : matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600&family=Manrope:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body data-state="idle">
+    <canvas class="ocean" aria-hidden="true"></canvas>
+    <div class="haze" aria-hidden="true"></div>
+    <nav class="top">
+      <button
+        id="history"
+        class="pill glass"
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded="false"
+        aria-controls="history-menu"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+          <path d="M12 7v5l4 2" />
+        </svg>
+        <span>History</span>
+        <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+      </button>
+      <div id="history-menu" class="menu glass" role="menu" aria-label="Conversations" hidden></div>
+    </nav>
+
+    <div class="corner">
+      <button
+        id="ocean"
+        class="square glass"
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="ocean-panel"
+        aria-label="Scene settings"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+          <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+          <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+        </svg>
+      </button>
+      <button id="fullscreen" class="square glass" type="button" aria-pressed="false" aria-label="Enter full screen">
+        <svg class="grow" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
+        </svg>
+        <svg class="shrink" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" />
+        </svg>
+      </button>
+      <button id="theme" class="theme glass" type="button" role="switch" aria-checked="false" aria-label="Dark mode">
+      <span class="knob" aria-hidden="true"></span>
+      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+      </svg>
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
+      </button>
+
+      <div id="ocean-panel" class="panel glass" role="dialog" aria-label="Scene settings" hidden>
+        <p class="panel-title" id="scene-label">Scene</p>
+        <div class="scene-list" role="radiogroup" aria-labelledby="scene-label">
+          <label class="scene-option">
+            <input type="radio" name="scene" value="bloom" />
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12C3 12 4 3 8 5c3 1 4 7 4 7s1-6 4-7c4-2 5 7-4 7Zm0 0c-8 0-8 7-3 6l3-6Zm0 0c8 0 8 7 3 6l-3-6Zm0 0v10" /></svg>Bloom</span>
+          </label>
+          <label class="scene-option">
+            <input type="radio" name="scene" value="sharks" />
+            <span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 18c1.5 0 2.5-1 4-1s2.5 1 4 1 2.5-1 4-1 2.5 1 4 1 2.5-1 4-1" />
+                <path d="M7 15c1.2-4.5 4.5-8.5 10-10-1.5 3.5-2 7-1.4 10" />
+              </svg>
+              Sharks
+            </span>
+          </label>
+          <label class="scene-option">
+            <input type="radio" name="scene" value="koi" />
+            <span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.53-8.5-6Z" />
+                <path d="M18 12v.5" />
+                <path d="M16 17.93a9.77 9.77 0 0 1 0-11.86" />
+                <path d="M7 10.67C7 8 5.58 5.97 2.73 5.5c-1 1.5-1 5 .23 6.5-1.24 1.5-1.24 5-.23 6.5C5.58 18.03 7 16 7 13.33" />
+              </svg>
+              Koi pond
+            </span>
+          </label>
+          <label class="scene-option">
+            <input type="radio" name="scene" value="rain" />
+            <span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2" />
+                <path d="M16 14v6M8 14v6M12 16v6" />
+              </svg>
+              Rain
+            </span>
+          </label>
+          <label class="scene-option">
+            <input type="radio" name="scene" value="fireflies" />
+            <span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="7" cy="8" r="1.5" />
+                <circle cx="16" cy="6" r="1.5" />
+                <circle cx="13" cy="13" r="1.5" />
+                <path d="M4 21c1-3 1-5 0-7M9 21c0-2 1-4 2-5M15 21c0-2-1-3-2-4M20 21c-1-3-1-5 0-7" />
+              </svg>
+              Fireflies
+            </span>
+          </label>
+          <label class="scene-option">
+            <input type="radio" name="scene" value="flock" />
+            <span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 9l3 2 3-2M11 5l3 2 3-2M13 14l3 2 3-2M5 17l2 1.4L9 17" />
+              </svg>
+              Flock
+            </span>
+          </label>
+          <label class="scene-option">
+            <input type="radio" name="scene" value="sky" />
+            <span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3l2.4 5.6 6 .5-4.6 4 1.4 5.9L12 16l-5.2 3 1.4-5.9-4.6-4 6-.5z" />
+              </svg>
+              Night sky
+            </span>
+          </label>
+          <label class="scene-option">
+            <input type="radio" name="scene" value="ants" />
+            <span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="7" cy="12" r="2" />
+                <circle cx="12" cy="12" r="2.4" />
+                <circle cx="17.5" cy="12" r="2" />
+                <path d="M10.5 9.5 9 6.5M13.5 9.5 15 6.5M10.5 14.5 9 17.5M13.5 14.5l1.5 3M19 10.5l2-2" />
+              </svg>
+              Ants
+            </span>
+          </label>
+          <label class="scene-option">
+            <input type="radio" name="scene" value="campfire" />
+            <span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+              </svg>
+              Campfire
+            </span>
+          </label>
+          <label class="scene-option">
+            <input type="radio" name="scene" value="zen" />
+            <span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <ellipse cx="9" cy="14" rx="4.5" ry="3" />
+                <path d="M2 20c3-1 6-1 9 0s6 1 11 0M15 9c2-1.5 4-1.5 6 0M2 9c1.5-1 3-1 4.5 0" />
+              </svg>
+              Zen
+            </span>
+          </label>
+        </div>
+        <p id="scene-hint" class="panel-note scene-hint"></p>
+
+        <div class="panel-row panel-section">
+          <div>
+            <p class="panel-title" id="reactive-label">Reactions</p>
+            <p class="panel-note">The scene responds to clicks and the chat</p>
+          </div>
+          <button id="reactive" class="switch" type="button" role="switch" aria-checked="true" aria-labelledby="reactive-label">
+            <span class="knob" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div id="schools-section" class="panel-section">
+          <p class="panel-title" id="schools-label">Sharks</p>
+          <div id="schools" class="school-list" role="radiogroup" aria-labelledby="schools-label"></div>
+        </div>
+      </div>
+    </div>
+
+    <main class="stage">
+      <ol id="thread" class="thread" aria-label="Conversation" aria-live="polite"></ol>
+      <h1 class="title">
+        <span class="sr-only">what’s on your mind?</span>
+        <span aria-hidden="true">what’s on your <span id="rotator" class="rotator"><span class="word word-current">mind?</span></span></span>
+      </h1>
+
+      <div class="dock">
+      <form id="composer" class="composer glass">
+        <ul id="chips" class="chips" aria-label="Attachments" hidden></ul>
+        <textarea id="prompt" rows="1" placeholder="Ask your agent anything..." aria-label="Message your agent"></textarea>
+        <div class="row">
+          <button id="attach" class="icon" type="button" aria-label="Attach files">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+          </button>
+          <input id="files" type="file" multiple hidden />
+          <button id="mic" class="icon" type="button" aria-label="Voice input" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <path d="M12 19v3" />
+            </svg>
+          </button>
+          <button
+            id="model"
+            class="model-chip"
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            aria-controls="model-panel"
+          >
+            <span class="dot" aria-hidden="true"></span><span id="model-name">Add model</span>
+          </button>
+          <span class="hints" aria-hidden="true">↵ send <span class="sep">·</span> ⇧↵ newline</span>
+          <button id="send" class="send" type="submit" aria-label="Send">
+            <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10" /><path d="M7 17 17 7" /></svg>
+            <svg class="stop" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5" /></svg>
+          </button>
+        </div>
+      </form>
+
+      <div id="model-panel" class="panel glass model-panel" role="dialog" aria-labelledby="model-title" hidden>
+        <p class="panel-title" id="model-title">Model</p>
+        <p class="panel-note">
+          Bring your own Anthropic API key. It stays in this browser and goes straight to Anthropic.
+          <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">Get a key</a>
+        </p>
+        <label class="field">
+          <span class="sr-only">API key</span>
+          <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…" />
+        </label>
+        <div class="panel-section">
+          <p class="panel-title" id="model-label">Model</p>
+          <div id="model-list" class="model-list" role="radiogroup" aria-labelledby="model-label"></div>
+        </div>
+        <div class="panel-section">
+          <p class="panel-title" id="effort-label">Effort</p>
+          <p class="panel-note">How hard it thinks before answering. Higher is slower.</p>
+          <div class="segmented" role="radiogroup" aria-labelledby="effort-label">
+            <label><input type="radio" name="effort" value="low" /><span>Low</span></label>
+            <label><input type="radio" name="effort" value="medium" /><span>Medium</span></label>
+            <label><input type="radio" name="effort" value="high" /><span>High</span></label>
+          </div>
+        </div>
+        <div class="panel-section">
+          <label class="field">
+            <span class="panel-title">How it talks to you</span>
+            <textarea id="system" rows="3"></textarea>
+          </label>
+        </div>
+        <div class="panel-actions">
+          <button id="forget-key" class="text-button" type="button">Forget key</button>
+          <span id="model-saved" class="panel-note" aria-live="polite"></span>
+        </div>
+      </div>
+      </div>
+    </main>
+
+    <script type="module" src="/app.ts"></script>
+  </body>
+</html>
